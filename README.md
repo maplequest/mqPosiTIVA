@@ -1,6 +1,6 @@
 Online at [positiva.maplequestlabs.com](https://positiva.maplequestlabs.com)
 
-# mqPosiTIVA
+# MapleQuest posiTIVA
 
 Copyright 2024 MapleQuest Innovations, maplequest@maplequestlabs.com.
 All Rights Reserved
