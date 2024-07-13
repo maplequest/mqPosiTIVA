@@ -1,0 +1,8 @@
+
+addExporter(['Export Sim File..', function () {
+  delete stanpumpConfig.action;
+  var fname = (stanpumpConfig.filename||"stanpumpR");
+  if (!fname.includes(".json")) fname+='.json';
+  mqSaveFile(JSON.stringify(stanpumpConfig,null,2),fname);
+}]);
+

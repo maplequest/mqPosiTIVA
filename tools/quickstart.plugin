@@ -1,0 +1,101 @@
+
+var quickstartDrugs = [];
+
+function quickstart() {
+  if (quickstartDrugs.length==0) { 
+    console.warn('No drugs selected')
+    return;
+  }
+  var dur = parseFloat(mqElement('quickstart-duration').innerText);
+  if (mqNaN(dur)||dur<=0) {
+    console.warn('Invalid duration')
+    return;
+  }
+  dur=Math.ceil(dur);
+  mqDelete('quickstart-window');
+  console.log('QuickStart running..')
+  stanpumpConfig.filename='QuickStartOutput';
+  stanpumpConfig.time=[];
+  stanpumpConfig.drug=[];
+  stanpumpConfig.dose=[];
+  stanpumpConfig.units=[];
+  stanpumpConfig.annotations=[];
+  stanpumpConfig.maximum = Math.floor(dur + 60);
+//  var d = new Date();
+//  d.setTime(d.getTime()+1000*2*60);
+//  stanpumpConfig.starttime = d.toTimeString().split(' ')[0].split(':').join('.');
+  stanpumpConfig.starttime='00.00.00';
+  var sugs = [];
+  for (var i=0;i<quickstartDrugs.length;i++) {
+    var drug = quickstartDrugs[i];
+    var lo = stanpumpDefaults[drug].lower;
+    var hi = stanpumpDefaults[drug].upper;
+    var tp = stanpumpDefaults[drug].typical;
+    if (tp<lo||tp>hi) tp = 0.5*(lo+hi);
+  //  console.log('suggest ' + drug + ' target: ' + tp);
+    sugs.push({ Drug: drug, Time: [0.01], Target: [tp], EndTime: dur });
+  }
+  stanpumpPendingSuggestions = sugs;
+  stanpumpSuggest(stanpumpPendingSuggestions.shift());
+}
+
+function quickstartUI() {
+  mqDelete('quickstart-window')
+  quickstartDrugs=[];
+  var h = 350;
+  var w = 2*120 + 2*8;
+  var x,y;
+  var wnd = mqWindow({
+    id: 'quickstart', 
+    title: 'QuickStart Drugs',
+    width: w+'px', height: h+'px',
+    onclose: function () {}
+  });
+  x=8; y=24;
+  mqAppend(wnd,mqLabel({ x: x+'px', y: y+'px', width: (w-16)+'px', label: '1. Select Drugs:'}));
+  y+=24;
+  mqAppend(wnd,mqList({
+    id: 'quickstart-drugs',
+    x: x+'px',
+    y: y+'px',
+    width: (w-16)+'px',
+    height: (h-32-32-32-32-8)+'px',
+    entries: drugDefaultGlobal['Drug'],
+    selected: null,
+    multi: true,
+    onclick: function (lbl) { 
+      if (!quickstartDrugs.includes(lbl)) 
+        quickstartDrugs.push(lbl); 
+      else {
+        var ds = [];
+        for (var i=0;i<quickstartDrugs.length;i++)
+          if (quickstartDrugs[i]!=lbl) ds.push(quickstartDrugs[i]);
+        quickstartDrugs=ds;
+      }
+    }
+  }));
+  y=h-32-32-24;
+  mqAppend(wnd,mqLabel({ x: x+'px', y: y+'px', width: (w-16)+'px', label: '2. Specify infusion duration (min):'}));
+  y=h-32-32;
+  mqAppend(wnd,mqInput({
+    id: 'quickstart-duration',
+    x: x+'px',
+    y: y+'px',
+    width: (w-16)+'px',
+    value: '60',
+    onenter: quickstart
+  }));
+  y=h-32;
+  mqAppend(wnd,mqButton({
+    id: 'quickstart-go',
+    x: x+'px', y: y+'px', 
+    width: (w-16)+'px',
+    label: 'Go!',
+    onclick: quickstart
+  }));
+}
+
+addTool(['Quick Start..', function () {
+  covariatesUI('QuickStart Patient Variables',quickstartUI);
+}]);
+

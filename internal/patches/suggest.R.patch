@@ -1,0 +1,92 @@
+--- ../../../stanpumpR/R/suggest.R	2024-07-11 04:17:57.564321600 -0700
++++ suggest.R	2024-07-11 05:39:57.517078500 -0700
+@@ -2,8 +2,7 @@
+     targetDrug,
+     targetTable,
+     endTime,
+-    drugs,
+-    drugList,
++    PK,
+     eventTable,
+     referenceTime,
+     DEBUG)
+@@ -25,14 +24,14 @@
+     outputComments("structure of targetTable", echo = DEBUG)
+     outputComments(targetTable, echo=DEBUG)
+     # # Remove blank values of targetTable
+-    if (referenceTime == "none")
+-    {
++    #if (referenceTime == "none")
++    #{
+       targetTable$Time <- as.numeric(targetTable$Time)
+       endTime <- as.numeric(endTime)
+-    } else {
+-      targetTable$Time    <- clockTimeToDelta(referenceTime, targetTable$Time)
+-      endTime <- clockTimeToDelta(referenceTime, endTime)
+-    }
++    #} else {
++    #  targetTable$Time    <- clockTimeToDelta(referenceTime, targetTable$Time)
++    #  endTime <- clockTimeToDelta(referenceTime, endTime)
++    #}
+     outputComments(paste("End Time =", endTime), echo = DEBUG)
+     outputComments("Structure of targetTable after processing time", echo = DEBUG)
+     outputComments(targetTable, echo = DEBUG)
+@@ -62,19 +61,16 @@
+     # print(str(targetTable))
+     #
+     outputComments("Ready to search for the target dose", echo = DEBUG)
+-    drug <- drugList[which(targetDrug == drugList)]
+-
+-    outputComments(paste("Drug is", drug), echo = DEBUG)
+ 
+-    infusionT1 <- round(c(targetTable$Time + drugs[[drug]]$tPeak, endTime), 0)
++    infusionT1 <- round(c(targetTable$Time + PK$tPeak, endTime), 0)
+     infusionT2 <- round(infusionT1[1:(length(infusionT1)-1)] +
+                         (infusionT1[2:(length(infusionT1))] - infusionT1[1:(length(infusionT1)-1)]) / 5 , 0)
+ 
+     testTable <- data.frame(
+       Time = c(targetTable$Time[],infusionT1, infusionT2),
+       Dose = 1,
+-      Units = c(rep(drugs[[drug]]$Bolus.Units, nrow(targetTable)),
+-                rep(drugs[[drug]]$Infusion.Units,nrow(targetTable)*2+1))
++      Units = c(rep(PK$Bolus.Units, nrow(targetTable)),
++                rep(PK$Infusion.Units,nrow(targetTable)*2+1))
+     )
+     testTable <- testTable[order(testTable$Time),]
+     testTable$Dose[nrow(testTable)] <- 0
+@@ -86,7 +82,7 @@
+     results <- simCpCe(
+       testTable,
+       eventTable,
+-      drugs[[drug]],
++      PK,
+       endTime,
+       plotRecovery = FALSE)$equiSpace[,c("Time","Ce")]
+     # plot <- ggplot(results,aes(x=Time, y=Ce)) +
+@@ -99,7 +95,7 @@
+     USE <- 1:(nrow(testTable)-1)
+     for (x in 1:10)
+     {
+-      results <- simCpCe(testTable, eventTable, drugs[[drug]] ,endTime, plotRecovery = FALSE)$equiSpace[,c("Time","Ce")]
++      results <- simCpCe(testTable, eventTable, PK ,endTime, plotRecovery = FALSE)$equiSpace[,c("Time","Ce")]
+       for (i in USE)
+       {
+         testTable$resultTime[i] <- max(results$Time[results$Time < testTable$Time[i+1]])
+@@ -155,7 +151,7 @@
+       testTable$Dose,
+       testTable$Time,
+       testTable$Units,
+-      drugs[[drug]],
++      PK,
+       endTime
+      )$estimate
+ 
+@@ -164,7 +160,7 @@
+     results <- simCpCe(
+       testTable,
+       eventTable,
+-      drugs[[drug]],
++      PK,
+       endTime,
+       plotRecovery = FALSE
+     )$equiSpace[,c("Time","Ce")]

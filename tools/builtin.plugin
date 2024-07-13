@@ -1,0 +1,4 @@
+
+addTool(["Patient Variables..", covariatesUI]);
+addTool(["Dosing Table..", dosingUI]);
+

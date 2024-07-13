@@ -1,0 +1,150 @@
+// --------------------
+// Drugs
+
+function activeDrugs (plt) {
+  var res = [];
+  var trends = [ plt.id.slice(8) + 'Ce' ];
+  for (var i=0;i<signalbase.data.labels.length;i++) {
+    if (trends.includes(signalbase.data.labels[i])) res.push(i);
+  }
+  return res;
+}
+
+function SVGPlotCoords(plt,xmin,ymin,xmax,ymax,x0,y0) 
+{
+  var x = plt.pxmin+(plt.pxmax - plt.pxmin)*((x0-xmin)/(xmax-xmin));
+  var y = plt.pymax-(plt.pymax - plt.pymin)*((y0-ymin)/(ymax-ymin));
+  return [x,y];
+}
+
+function SVGRenderDrugs (plt) {
+  var xrange = plt.pxmax - plt.pxmin;
+  if (mqNaN(xrange)||xrange<100) return;
+  var yrange = plt.pymax - plt.pymin;
+  if (mqNaN(yrange)||yrange<10) return;
+  ys=[];
+  var xmin=signalbase.zoomBegin;
+  var xmax=signalbase.zoomEnd;
+  var ymin=null;
+  var ymax=null;
+  var chs = activeDrugs(plt);
+  for (var i = 0;i<chs.length;i++) {
+    var fs = signalbase.data.srates[chs[i]];
+    var dt = 1.0/fs/60.0;
+    var tmpy = signalbase.data.signals[chs[i]];
+    for (var j=xmin;j<xmax;j++) {
+      var y = tmpy[j];
+      if (ymin==null||y<ymin) ymin=y;
+      if (ymax==null||y>ymax) ymax=y;
+    }
+    ys.push(tmpy);
+  }
+  var lower = stanpumpDefaults[plt.id.slice(8)].lower;
+  var upper = stanpumpDefaults[plt.id.slice(8)].upper;
+  var typical = stanpumpDefaults[plt.id.slice(8)].typical;
+  if (ymin>lower) ymin=lower;
+  if (ymax<upper) ymax=upper;
+  var rge = ymax-ymin;
+  ymin-=0.1*rge;
+  ymax+=0.1*rge;
+  plt.ymin=ymin;
+  plt.ymax=ymax;
+  var dx = 1;
+  var dy = 1;
+  var y_1 = 0;
+  var x_1 = 0;
+
+  var x1,y1,x2,y2;
+  [x1,y1]=SVGPlotCoords(plt,xmin,ymin,xmax,ymax,xmin,lower);
+  [x2,y2]=SVGPlotCoords(plt,xmin,ymin,xmax,ymax,xmax,upper);
+  plt.draw.polygon(x1+','+y1+' '+x1+','+y2+' '+x2+','+y2+' '+x2+','+y1).fill('#eee').stroke('none');
+  [x1,y1]=SVGPlotCoords(plt,xmin,ymin,xmax,ymax,xmin,typical);
+  [x2,y2]=SVGPlotCoords(plt,xmin,ymin,xmax,ymax,xmax,typical);
+  plt.draw.line(x1,y1,x2,y2).stroke({width: 2, color: '#aaa'}).fill('none');
+  var color = stanpumpDefaults[plt.id.slice(8)].color;
+  var s = { width: 2, color: color };
+  for (var j=0;j<ys.length;j++) {
+    var data = ys[j];
+    var pts = [];
+    for (var i=xmin;i<xmax;i++) {
+      if (!isNaN(data[i])) {
+        var x = plt.pxmin+(plt.pxmax - plt.pxmin)*((i-xmin)/(xmax-xmin));
+        var y = plt.pymax-(plt.pymax - plt.pymin)*((data[i]-ymin)/(ymax-ymin));
+        if (i==0||Math.abs(y_1-y)>=dy||Math.abs(x_1-x)>=dx) {
+          pts.push([x,y]);
+          x_1 = x;
+          y_1 = y;
+        }
+      }
+    }
+    //plt.draw.polyline(pts).fill('none').stroke(plt.linestyle[j%10]);
+    plt.draw.polyline(pts).fill('none').stroke(s);
+  }
+}
+
+function drugsLabel (plt) {
+  var lbl = plt.id.slice(8);
+  return lbl.charAt(0).toUpperCase() + lbl.slice(1);
+}
+
+// find drug at pointer
+function drugsHoverSnap() {
+  var plt = hoverPlot;
+  var chs = activeDrugs(plt);
+  var rge = plt.ymax-plt.ymin;
+  var val = plt.ymin + hoverAtValue*rge;
+  var res = null;
+  var mindist = null; 
+  //var color = stanpumpDefaults[plt.id.slice(8)].color;
+  var color = '#fff';
+  var unit = stanpumpDefaults[plt.id.slice(8)].concentrationUnits + '/ml';
+  for (var i=0;i<chs.length;i++) {
+    var lbl = signalbase.data.labels[chs[i]];
+    var fs = signalbase.data.srates[chs[i]];
+    var ofs = Math.round(hoverAt*fs);
+    var val2 = signalbase.data.signals[chs[i]][ofs];
+    var dist = Math.abs(val-val2)/rge;
+    if (mindist==null||dist<mindist) {
+      //res = [lbl, hoverPlot.hhmmss(hoverAt),val2.toFixed(2),hoverPlot.linestyle[i%10].color];
+      res = [lbl, hoverPlot.hhmmss(hoverAt)+ ' ' + unit,val2.toFixed(2),color];
+      mindist = dist;
+    }
+  }
+  return res;
+}
+
+function drugsHover() {
+  var xmax = hoverW;
+  var ymax = hoverH;
+  var data = drugsHoverSnap();
+  if (data!=null) {
+    hoverCtx.fillStyle = '#333';
+    hoverCtx.strokeStyle = '#ffffff';
+    hoverCtx.fillRect(0, 0, hoverW, hoverH);
+    hoverCtx.font = '12px mqDefault';
+    hoverCtx.fillStyle = '#fff';
+    hoverCtx.textAlign= 'center';
+    hoverCtx.textBaseline= 'middle';
+    hoverCtx.fillText(data[0],hoverW/2,0.15*hoverH);
+    hoverCtx.fillText(data[1],hoverW/2,0.9*hoverH);
+    hoverCtx.font = 'bold 30px mqDefault';
+    hoverCtx.fillStyle = data[3];
+    hoverCtx.fillText(data[2],hoverW/2,0.55*hoverH);
+  } else {
+    hoverCtx.clearRect(0, 0, hoverW, hoverH);
+  }
+}
+
+var drugs = mqSort(drugDefaultGlobal['Drug']);
+for (var i=0;i<drugs.length;i++) {
+  addPlotter({
+    id: 'plotter-'+drugs[i],
+    mode: 'trends',
+    label: drugs[i],
+    default: false,
+    render: SVGRenderDrugs,
+    renderLabel: drugsLabel,
+    renderHover: drugsHover
+  });
+}
+

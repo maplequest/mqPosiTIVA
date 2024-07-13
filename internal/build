@@ -1,0 +1,163 @@
+tgt="../stanpump.R"
+
+srcdir="../../stanpumpR/R"
+
+if [ ! -d $srcdir ]; then
+  echo "stanpumpR repository not found"
+  exit 1
+fi
+
+files="globalVariables.R cube.R tPeakError.R CE.R lbmJames.R drugAndEventDefaults.R drugs_alfentanil.R drugs_dexmedetomidine.R drugs_etomidate.R drugs_fentanyl.R drugs_hydromorphone.R drugs_ketamine.R drugs_lidocaine.R drugs_methadone.R drugs_midazolam.R drugs_morphine.R drugs_naloxone.R drugs_oliceridine.R drugs_oxycodone.R drugs_oxytocin.R drugs_pethidine.R drugs_propofol.R drugs_remifentanil.R drugs_rocuronium.R drugs_sufentanil.R getDrugPK.R advanceState.R advanceStatePO.R calculateCe.R convertState.R advanceClosedForm0.R advanceClosedForm1.R advanceClosedFormPO_IM_IN.R simCpCe.R simulateDrugsWithCovariates.R validateTime.R validateDose.R suggest.R"
+
+echo "# Automatically generated - do not edit" > $tgt
+echo >> $tgt
+
+cat prelude.R >> $tgt
+
+cat >> $tgt << _EOF
+
+drugDefaults_global <- data.frame(
+  Drug = c("propofol","remifentanil","fentanyl","alfentanil","sufentanil","morphine",
+      "pethidine","hydromorphone","methadone","ketamine","dexmedetomidine","midazolam",
+      "etomidate","lidocaine","rocuronium","naloxone","oxytocin","oxycodone","oliceridine"),
+  Concentration.Units = c("mcg","ng","ng","ng","ng","mcg","mcg","ng","mcg","mcg","ng",
+       "mcg","mcg","mcg","mcg","ng","ng","ng","ng"),
+  Bolus.Units = c("mg","mcg","mcg","mcg","mcg","mg","mg","mg","mg","mg","mcg","mg","mg",
+       "mg","mg","mcg","mcg","NA","mg"),
+  Infusion.Units = c("mcg/kg/min","mcg/kg/min","mcg/kg/hr","mcg/kg/hr","mcg/kg/hr",
+       "mg/hr","mg/hr","mg/hr","mg/hr","mg/hr","mcg/kg/hr","mg/hr","mg/kg/min","mg/hr",
+       "mg/kg/hr","mcg/min","mcg/min","NA","mcg/kg/min"),
+  Default.Units = c("mg","mcg/kg/min","mcg","mcg","mcg","mg","mg","mg","mg","mg",
+       "mcg/kg/hr","mg","mg","mg","mg","mcg","mcg","mg PO","mg"),
+  Units = c("mg,mg/kg,mcg/kg/min,mg/kg/hr","mcg,mcg/kg,mcg/kg/min","mcg,mcg/kg,mcg/kg/hr",
+       "mcg,mcg/kg,mcg/kg/hr","mcg,mcg/kg,mcg/kg/hr","mg,mg/hr","mg,mg/hr",
+       "mg,mg/kg,mg/hr,mg/kg/hr,mg PO,mg IM,mg IN","mg,mg/hr","mg,mg/kg,mg/hr,mg/kg/hr",
+       "mcg,mcg/kg,mcg/hr,mcg/kg/hr","mg,mg/kg,mg/hr","mg,mg/kg/min","mg,mg/hr",
+       "mg,mg/kg/hr","mcg,mcg/kg,mg,mg/kg,mcg/min,mcg/kg/min,mg/min,mg/kg/min",
+       "mcg,mg,mg/kg,mcg/min","mg PO","mg,mcg/kg/min"),
+  Color = c("#FFCC00","#0000C0","#0491E2","#0491E2","#0491E2","#032FED","#5155FF",
+        "#032FED","#71C5E8","#FFCC00","#791AEE","#E36C0A","#FFCC00","#B7AE7F",
+        "#F9423A","#404040","#008F7D","#032FED","#FF00CC"),
+  Lower = c(2.5,0.8,0.48,31.2,0.0448,0.0064,0.2,1.2,0.048,0.1,0.4,0.04,0.4,0.5,1,0,0.05,10,18.296),
+  Upper = c(4,2,1.2,78,0.112,0.016,0.5,3,0.12,0.16,0.8,0.12,0.8,1.5,2.2,0,0.2,20,37.504),
+  Typical = c(3,1.2,0.72,46.8,0.0672,0.0096,0.3,1.8,0.072,0.12,10,0.1,0.5,1,1.5,0,0.1,14,27.4),
+  MEAC = c(0,1,0.6,39,0.056,0.008,0.25,1.5,0.06,0,0,0,0,0,0,0,0,12,27.9),
+  endCe = c(1,1,0.6,39,0.056,0.008,0.25,1.5,0.06,0.1,0.4,0.04,0.4,0.5,1,1,0.05,10,27.4),
+  endCeText = c("emergence","ventilation","ventilation","ventilation","ventilation",
+       "ventilation","ventilation","ventilation","ventilation","emergence","emergence",
+       "wakefulness","emergence","emergence","reversable","no effect","no effect","ventilation","ventilation")
+)
+
+eventDefaults <- data.frame(
+  Event = c("Start","Timeout","Induction","Intubation","Extubation","Emergence",
+     "End","CPB Start","CPB36","CPB35","CPB34","CPB33","CPB32","CPB31","CPB End",
+     "Clamp On","Clamp Off","Tourniquet On","Tourniquet Off","Other","Add Events"),
+  Color = c("blue","blue","green","green","green","green","blue","#FF40FF","#d232f2",
+     "#a828e8","#7e1ede","#5414d4","#2a0aca","#181CAE","brown","red","brown","red",
+     "brown","orange","black")
+)
+
+_EOF
+
+echo "=> building $tgt .."
+for file in $files; do
+  srcfile="$srcdir/$file"
+  if [ ! -f $srcfile ]; then
+    echo "$srcfile not found?? bailing."
+    exit 1
+  fi
+  echo "processing $srcfile.."
+  cp $srcfile .
+  if [ -f patches/${file}.patch ]; then  
+    patch -p0 --ignore-whitespace < patches/${file}.patch
+  fi
+  cat $file >> $tgt
+  rm $file
+done
+echo "== $tgt"
+
+cat >> $tgt << _EOF
+
+stanpump <- function(str) {
+
+  cfg <- fromJSON(str)
+
+  action = toString(cfg['action'])
+  if (action=='simulate') {
+#--------------------------
+
+    weight = as.numeric(cfg['weight'])
+    height = as.numeric(cfg['height'])
+    age = as.numeric(cfg['age'])
+    sex = cfg['sex']
+    maximum = as.numeric(cfg['maximum'])
+
+    drug = cfg['drug']
+    time = cfg['time']
+    dose = cfg['dose']
+    units = cfg['units']
+
+    eventtimes = cfg['eventtimes']
+    eventnames = cfg['eventnames']
+
+    nevents <- length(unlist(eventtimes))
+
+    plotRecovery <- FALSE
+
+    doseTable <- data.frame(
+      Drug = unlist(drug),
+      Time = unlist(time),
+      Dose = unlist(dose),
+      Units = unlist(units)
+    )
+
+    eventTable <- data.frame(
+      Time =  if (nevents==0) double() else unlist(eventtimes),
+      Event = if (nevents==0) character() else unlist(eventnames)
+    )
+
+    output <- simulateDrugsWithCovariates(doseTable, eventTable, weight, height, age, sex, maximum, plotRecovery)
+
+    str <- "["
+    for (drug in output) {
+      if (nchar(str)>1) { str <- paste(str,","); }
+      results <- drug['results']$results
+      str <- paste(str,toJSON(results))
+    }
+    str <- paste(str,"]");
+#--------------------------
+  } else if (action=='suggest') {
+    weight = as.numeric(cfg['weight'])
+    height = as.numeric(cfg['height'])
+    age = as.numeric(cfg['age'])
+    sex = cfg['sex']
+    drug <- toString(cfg['suggestDrug'])
+    time <- cfg['suggestTime']
+    target <- cfg['suggestTarget']
+    endTime <- as.numeric(cfg['suggestEndTime'])
+    targetTable <- data.frame(
+      Time = unlist(time),
+      Target = unlist(target)
+    )
+#    eventtimes = cfg['eventtimes']
+#    eventnames = cfg['eventnames']
+#    nevents <- length(unlist(eventtimes))
+#    eventTable <- data.frame(
+#      Time =  if (nevents==0) double() else unlist(eventtimes),
+#      Event = if (nevents==0) character() else unlist(eventnames)
+#    )
+    eventTable <- data.frame (
+      Time = double(),
+      Event = character()
+    )
+    drugDefaults <- getDrugDefaults(drug)
+    PK <- getDrugPK(drug, weight, height, age, sex, drugDefaults)
+    output <- suggest(drug,targetTable,endTime,PK,eventTable,"none",DEBUG=FALSE)
+    str <- toJSON(output)
+  }
+
+  str
+}
+
+_EOF
+

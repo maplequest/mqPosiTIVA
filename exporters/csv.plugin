@@ -1,0 +1,19 @@
+
+addExporter(['Export Ce/Cp CSV..',function () {
+  var cols=["Time"];
+  for (var i=0;i<signalbase.data.labels.length;i++) {
+    cols.push(signalbase.data.labels[i]);
+  }
+  var csvdata=[];
+  csvdata.push(cols);
+  for (var i=0;i<signalbase.data.signals[0].length;i++) {
+    cols=[i];
+    for (var j=0;j<signalbase.data.signals.length;j++) { 
+      cols.push(signalbase.data.signals[j][i]);
+    }
+    csvdata.push(cols);
+  }
+  mqSaveAsCSV("positivaPK.csv", csvdata);
+}]);
+
+

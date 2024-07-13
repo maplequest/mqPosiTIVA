@@ -1,0 +1,6 @@
+attic
+database.dat
+plugin-manager.min.js
+*.swp
+*.old*
+stanpump.R

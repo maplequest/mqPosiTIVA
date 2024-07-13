@@ -1,0 +1,81 @@
+
+addExample(["QuickStartExample", `{
+  "filename": "QuickStartExample",
+  "starttime": "00.00.00",
+  "weight": 70,
+  "height": 170,
+  "age": 50,
+  "sex": "male",
+  "maximum": 120,
+  "drug": [
+    "propofol",
+    "propofol",
+    "propofol",
+    "propofol",
+    "remifentanil",
+    "remifentanil",
+    "remifentanil",
+    "remifentanil",
+    "rocuronium",
+    "rocuronium",
+    "rocuronium",
+    "rocuronium"
+  ],
+  "time": [
+    0,
+    2,
+    14,
+    60,
+    0,
+    2,
+    14,
+    60,
+    0,
+    2,
+    14,
+    60
+  ],
+  "dose": [
+    53.5,
+    131,
+    95.7,
+    0,
+    20,
+    0.0501,
+    0.0426,
+    0,
+    11.2,
+    1.28,
+    1.09,
+    0
+  ],
+  "units": [
+    "mg",
+    "mcg/kg/min",
+    "mcg/kg/min",
+    "mcg/kg/min",
+    "mcg",
+    "mcg/kg/min",
+    "mcg/kg/min",
+    "mcg/kg/min",
+    "mg",
+    "mg/kg/hr",
+    "mg/kg/hr",
+    "mg/kg/hr"
+  ]
+}`]);
+
+addExample(["DemoExample", `{
+  "filename": "DemoExample",
+  "weight": 60,
+  "height": ${Math.round(66*2.54)},
+  "age": 50,
+  "sex": "female",
+  "maximum": 90,
+  "drug": [ "propofol","fentanyl","remifentanil","rocuronium","propofol","rocuronium","rocuronium","rocuronium" ],
+  "time": [ 0,0,0,0,10,20,40,60 ],
+  "dose": [ 150,100,0.1,50,125,20,20,20 ],
+  "units": [ "mg","mcg","mcg/kg/min","mg","mcg/kg/min","mg","mg","mg" ]
+}`]);
+
+

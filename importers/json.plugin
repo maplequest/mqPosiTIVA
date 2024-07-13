@@ -1,0 +1,11 @@
+
+addImporter(['Import Sim File..', function () {
+  mqLoadFile(function (fname, data) {
+    var strdata = mqArrayBufferToString(data);
+    undoPush();
+    stanpumpConfig=JSON.parse(strdata);
+    stanpumpConfig.filename = fname;
+    stanpumpDirty=true;
+  }, "*.json");
+}]);
+

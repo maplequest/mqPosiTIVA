@@ -1,0 +1,20 @@
+--- ../../../stanpumpR/R/simCpCe.R	2024-07-11 04:17:57.550261200 -0700
++++ simCpCe.R	2024-07-11 05:00:02.057835400 -0700
+@@ -1,4 +1,4 @@
+-library(tidyr)
++#library(tidyr)
+ 
+ # TODO Fix plotRecovery
+ #' Simulate plasma and effect site concentration from time 0 to maximum
+@@ -157,9 +157,9 @@
+     )
+ #  print(str(max))
+   if (!plotRecovery) results$Recovery <- NULL
+-  results <- tidyr::gather(results,"Site","Y",-Time)
++#  results <- tidyr::gather(results,"Site","Y",-Time)
+   results$Drug <- PK$drug
+-  results <- results[,c(4,1,2,3)]
++#  results <- results[,c(4,1,2,3)]
+ #  print(results)
+   # Structure of results
+   # Four columns: Drug, Time, Site, Y

@@ -1,0 +1,31 @@
+
+addExporter(["Export as QR Code", function() {
+  mqDelete('qr-window');
+  var dim = 324;
+  var h = 24+dim+8+8;
+  var w = dim+8+8;
+  var wnd = mqWindow({
+    id: 'qr',
+    title: 'Scan QR Code',
+    width: w+'px', height: h+'px',
+  });
+  mqAppend(wnd,mqMakeWidget({
+    tag: 'div',
+    id: 'qr-code',
+    margin: 8+'px',
+    width: dim+'px',
+    height: dim+'px',
+  }));
+  var qrstr = "https://positiva.maplequestlabs.com/#" + btoa(JSON.stringify(stanpumpConfig));
+  var qrcode = new QRCode("qr-code", {
+    text: qrstr,
+    width: dim,
+    height: dim,
+    colorDark : "#000000",
+    colorLight : "#ffffff",
+    //correctLevel : QRCode.CorrectLevel.H
+    correctLevel : QRCode.CorrectLevel.L
+  });
+  mqSet('qr-code','title','');
+}]);
+

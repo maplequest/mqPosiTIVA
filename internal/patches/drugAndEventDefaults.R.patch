@@ -1,0 +1,20 @@
+--- ../../../stanpumpR/R/drugAndEventDefaults.R	2024-07-11 04:17:57.461236200 -0700
++++ drugAndEventDefaults.R	2024-07-11 04:41:27.363685400 -0700
+@@ -16,7 +16,7 @@
+     # Annoying, Shiny's autoload won't load sysdata.rda, only .R files!
+     # So, when loaded as a package, sysdata.rda will load but not when
+     # the Shiny app is executed using runApp()
+-    load('data/sysdata.rda')
++    #load('data/sysdata.rda')
+   }
+ 
+   drugDefaultsDataset <- drugDefaults_global
+@@ -45,7 +45,7 @@
+     # Annoying, Shiny's autoload won't load sysdata.rda, only .R files!
+     # So, when loaded as a package, sysdata.rda will load but not when
+     # the Shiny app is executed using runApp()
+-    load('data/sysdata.rda')
++    # load('data/sysdata.rda')
+   }
+ 
+   drugDefaultsDataset <- drugDefaults_global
