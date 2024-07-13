@@ -2,6 +2,9 @@ Online at [positiva.maplequestlabs.com](https://positiva.maplequestlabs.com)
 
 # mqPosiTIVA
 
+Copyright 2024 MapleQuest Innovations, maplequest@maplequestlabs.com.
+All Rights Reserved
+
 MapleQuest posiTIVA provides an online interface to pharmacokinetic (PK)
 simulations relevant to anesthesiology.  It is a learning and teaching
 tool intended to further the understanding of pharmacokinetic properties
@@ -15,3 +18,6 @@ code in a WebR WebAssembly environment. stanpumpR performs pharmacokinetic
 simulations based on mathematical models published in the peer-reviewed
 literature.
 
+Development of MapleQuest posiTIVA is supported in part by the 2023 World Federation
+of Societies of Anaesthesiologists (WFSA) Fresenius-Kabi Innovation Award
+and the 2024 Society for Technology in Anesthesia Research Grant.
